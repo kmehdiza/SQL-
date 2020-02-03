@@ -1,0 +1,318 @@
+
+
+
+
+
+
+CREATE     view [datamart].[view_name_model] as 
+
+	select  
+	
+column_names
+
+from     
+	  (select 
+		
+				  column_name_S_Table = 
+
+														case
+																							when column_name_S_Table = '000_Immat'                   then 0
+																							when column_name_S_Table = 'MedHigh'        then 3
+																							when column_name_S_Table = 'Low'            then 2
+																							when column_name_S_Table = 'MedHigh'         then 2
+																							when column_name_S_Table = 'RatLow'             then 1
+																							when column_name_S_Table = 'LowMedHigh'      then 1
+																							when column_name_S_Table = 'Other'                       then-9 
+																							else                                                                   -9 -- check which number we can give, -9 already exist  
+																					end
+		,* from 
+
+				 (select column_name_S_Table = 
+																							case 
+																							when column_name_Status = 0 and column_name_Rating in ('4')            then 'Immate'
+																							when column_name_Status = 3 and column_name_Rating in ('3', '2') 	    then 'MedHigh'
+																							when column_name_Status = 3 and column_name_Rating in ('1') 			then 'Low'
+																							when column_name_Status = 2 and column_name_Rating in ('3', '2')	    then 'MedHigh'
+																							when column_name_Status = 2 and column_name_Rating in ('1')			then 'RatLow'
+																							when column_name_Status = 1 and column_name_Rating in ('3', '2','1')	then 'LowMedHigh'
+																							else                                                                         'Other'
+																							end 
+
+		, * from 
+
+		
+		(select 
+		           column_name_risk_sta  
+																		= case        when column_name_Status_n = 3  then 'Y'  else 0 
+																				     
+																				end 
+
+				  ,column_name_ri_cnt                   = case         when column_name_Status_n = 3   then 1    else  0 
+					                                                            end 
+
+				,column_name_Is_cnt = 
+																			          (select count(*) from dmt.table_name_mod_data as t cross apply (
+																				      values (t.column_namel_fp1), (t.column_namel_fp2), (t.column_namel_fpa), (t. ), (t.column_namel_ifsed), (t.column_name_ccl), (t.column_name_bp1)
+																				      ) v(col) where v.col is null)
+
+				,column_name_cnt = 
+					                                                                 (select count(*) from dmt.table_name_mod_data as t cross apply (
+																				     values (t.column_name_mName), (t.column_name_mdpu), (t.column_name_modSts), (t.column_name_modTyp)
+																				     ) v(col) where v.col is null )
+																					 
+				,column_name_Status =
+																					(select max (v) from ( values (column_name_att_sttt_n), (column_name_m_v_s), (column_name_m_s_n), (column_name_sts_ag)) as value(v))
+
+			   ,column_name_Rating                                         =case   when column_name_oBoar in ('F', 'P') or column_name_Lmf = 0   then column_name_moRis
+						                                                           when column_name_oBoar in ('N')      and column_name_Lmf = 1   then cf_legacyRating end
+
+			,column_name_Mis_list  			                                 = (dmt.findNullstr(column_name_mName, 'Model Name') + dmt.findNullstr(column_name_mdpu, 'Model Purpose/Scope')+ dmt.findNullstr(column_name_modSts, 'Model Status') + 
+											                                dmt.findNullstr(column_name_mType, 'Model Type') )
+
+			,cf_co01_Amb_DQ_MissFields_list  		                          = (dmt.findNullstr(column_namel_fp1, 'FINMA Pillar 1')  + dmt.findNullstr(column_namel_fp2, 'FINMA Pillar 2') +  
+																				dmt.findNullstr(column_namel_fpa, 'FINMA LPA') +  dmt.findNullstr(column_namel_ifsed, 'IFRS 9 ECL') +  dmt.findNullstr(column_name_ccl, 'CECL') +  dmt.findNullstr(column_name_bp1, 'ECB Pillar 1')  +  dmt.findNullstr(co1_bol_ecbp2, 'ECB Pillar 2')  + dmt.findNullstr(co1_bol_ecbst, 'ECB Stress Testing') + 
+																				dmt.findNullstr(co1_bol_ccar, 'CCAR') +  dmt.findNullstr(co1_bol_dfast, 'DFAST') + dmt.findNullstr(co1_bol_cst, 'CST') + dmt.findNullstr(co1_bol_earcar, 'EaR /CaR') +  dmt.findNullstr(co1_bol_SOXRel, 'SOX Relevant'))
+
+			,cf_co01_Model_Risk_Status = 
+
+																					case 
+																							when column_name_Status_n = 3 then 'Red'
+																							when column_name_Status_n = 2 then 'Amber'
+																							when column_name_Status_n = 1 then 'Green'
+																							when column_name_Status_n = 0 then 'Imm'
+																							when column_name_Status_n = -9 then 'Und'
+																																  else 'Missing'
+																					end 
+
+								,cf_co01_Model_Attest_Stat = 
+																				case 
+																							when column_name_att_sttt_n =  3 then 'Red'
+																							when column_name_att_sttt_n =  2 then 'Amber'
+																							when column_name_att_sttt_n =  1 then 'Green'
+																							when column_name_att_sttt_n =  0 then 'Imm'
+																							when column_name_att_sttt_n = -9 then 'Und'
+																													           else 'Missing' 
+																				end 
+
+
+								,cf_co01_Val_Cond_Status_aggr  = 
+																					case 
+																						when column_name_sts_ag =  3 then 'Red'
+																						when column_name_sts_ag =  2 then 'Amber'
+																						when column_name_sts_ag =  1 then  'Green'
+																						when column_name_sts_ag =  0 then 'Immaterial'
+																						when column_name_sts_ag = -9 then 'Und'
+																															     else 'Missing'
+																					end
+
+							   ,cf_co01_Model_Valid_Status = 
+																					case
+																								when column_name_m_v_s =  3 then 'Red'
+																								when column_name_m_v_s =  2 then 'Amber'
+																								when column_name_m_v_s =  1 then 'Green'
+																								when column_name_m_v_s =  0 then 'Immaterial'
+																								when column_name_m_v_s = -9 then 'Und'
+																																	else 'Missing' 
+																					end 
+				,* from 
+
+			(
+			select 
+				   column_name_att_sttt_n								= case 
+																					   when column_name_m_a_s = '001_AttDueDateOverdue'								    then  3 
+																					   when column_name_m_a_s = '002_RedDQIssues'										then  3 
+																					   when column_name_m_a_s = '003_AmberDQIssues'									    then  2 
+																					   when column_name_m_a_s = '004_AttestedWithDisclaimers'							then  2
+																					   when column_name_m_a_s = '005_Otherwise'										    then  1
+																					   else																								 -9
+																				  end
+
+				 , column_name_m_s_n										= case 
+																					   when column_name_m_s = '001_ApprovedButMissConfDueDte'								    then  3 
+																					   when column_name_m_s = '002_ConfDueDteOverdue3m'									        then  3 
+																					   when column_name_m_s = '003_ConfDueDteOverdue'										    then  2 
+																					   when column_name_m_s = '004_LastConfReview_RevalRequired_NOTLIVE'					    then  2
+																					   when column_name_m_s = '005_Otherwise'												    then  1
+																					   else																								 -9
+																				  end
+
+				 , column_name_m_v_s							        = case 
+																					   when column_name_m_v_s = 'LBVOM'								    then  3 
+																					   when column_name_m_v_s = '002_ValOutRejected'									    then  3 
+																					   when column_name_m_v_s = 'valAppDM'				        then  3 
+																					   when column_name_m_v_s = 'RDOD'							        then  3
+																					   when column_name_m_v_s = 'RDDODE'								    then  2
+																					   when column_name_m_v_s = 'RDDODE'								    then  1
+																					   when column_name_m_v_s = '007_Otherwise'										    then  1
+																					   else																								 -9
+																				  end
+
+					,column_name_Status_n  
+																				= case 
+																						when column_name_m_r_s = 'ImmM'                                    then 0
+																						when column_name_m_r_s = 'MMS'                                  then 3
+																						when column_name_m_r_s = 'MRAT'                                       then 3
+																						when column_name_m_r_s = 'MTH'                                       then 3
+																						when column_name_m_r_s = 'MSTM'                                        then 2
+																						when column_name_m_r_s = 'MTBL'                                        then 1
+																						when column_name_m_r_s = '006_Otherwise'                                        then 1
+																					    else                                                                                            -9 
+																					
+																					end 
+					,column_name_sts_ag  
+								                                                = case
+																						when column_name_v_c_s_a = 'ImmM'                                  then 0
+																						when column_name_v_c_s_a = 'CRDO'                        then 3
+																						when column_name_v_c_s_a = 'WCR'                              then 3
+																						when column_name_v_c_s_a = 'WCA'                            then 2
+																						when column_name_v_c_s_a = 'WCG'                            then 1
+																						when column_name_v_c_s_a = 'ATSM'                             then 1
+																						when column_name_v_c_s_a = '007_Otherwise'                                      then 0
+																					       else                                                                                          -9 
+																					end
+
+				 , * 
+
+			  from
+			
+				(
+				select 
+					   column_name_m_a_s							    = case 
+																						when column_name_d_date_created is null or (column_name_a_d_d is not null and column_name_a_d_d < column_name_d_date_created)	then '001_AttDueDateOverdue'
+																						when column_name_iss_f = 1																						then '002_RedDQIssues'
+																						when column_name_iss_fg = 1 and not column_name_s_cd = 'L'														then '003_AmberDQIssues'
+																						when column_name_att = 'A'																						then '004_AttestedWithDisclaimers'
+																						else																														 '005_Otherwise'
+																				  end
+
+					, column_name_m_s    									= case 
+																						when column_name_cnDe is null and column_name_coVot	in ('APPR','ASC','App')		                                    then '001_ApprovedButMissConfDueDte'																				
+																						when column_name_cnDe is not null and column_name_cnDe < dateadd(month,-3,column_name_d_date_created)					then '002_ConfDueDteOverdue3m'
+																						when column_name_cnDe is not null and column_name_cnDe < column_name_d_date_created										then '003_ConfDueDteOverdue'
+																						when 1=2																												then '004_LastConfReview_RevalRequired_NOTLIVE'  -- ATTENTION: cf_co27_str_lastConfRevOut needs to be in ('C_RR','CR_RR')
+																						else																														 '005_Otherwise'
+																				  end
+
+					, column_name_m_v_s     							= case 
+																						when column_name_modSts = 'A3' and (column_name_coVot is null or column_name_coVot = '')								then 'LBVOM'																				
+																						when column_name_coVot	in ('REJ','REJECTED')																			then '002_ValOutRejected'
+																						when column_name_coVot	in ('APPR','APPROVED','ASC','App') and column_name_re_v_d is null		then 'valAppDM'
+																						when column_name_re_v_d is not null and column_name_re_v_d < dateadd(month,-3,column_name_d_date_created)						then 'RDOD'
+																						when column_name_re_v_d is not null and column_name_re_v_d <  column_name_d_date_created										then 'RDDODE'
+																						when column_name_re_v_d is not null and column_name_re_v_d >= column_name_d_date_created	 									then 'RDDODE'
+																						else																														 'Otherwise'
+																				  end
+
+					,column_name_m_r_s = 	
+																					case 
+																							when  column_name_immMr_f = 1  /* or column_name_S_Table =  0*/                                                 then 'ImmM'
+																							when  column_name_modSts is null                                                                                   then 'MMS'
+																							--when  column_name_Rating = ''                                                                                       then 'MRAT'
+																	-- Dependency			--when  column_name_S_Table = 3                                                                                         then 'MTH'
+																							--when  column_name_S_Table = 2                                                                                         then 'MSTM'
+																							--when  column_name_S_Table = 1                                                                                         then 'MTBL'
+																							else                                                                                                                     'Otherwise'
+																					end
+
+					,column_name_v_c_s_a =                        case 
+																						when column_name_immMr_f = 1                                                                                                                                                   then 'ImmM'
+																						when column_name_oBoar = 'Fully Onboarded' and column_name_app_val_o_f = 0 and co1_dte_highMRRRemDue is not null and co1_dte_highMRRRemDue < column_name_d_date_created        then 'CRDO'
+																		--Dependency	-- when column_name_co_st_ag_te = 3                                                                                                                           then 'WCR'
+																						-- when column_name_co_st_ag_te = 2                                                                                                                           then 'WCA'
+																						-- when column_name_co_st_ag_te = 1                                                                                                                           then 'WCG'
+																						-- when column_name_co_st_ag_te is null                                                                                                                       then 'ATSM'
+																																																														     else 'Otherwise' 
+																						end
+
+					 , *
+
+				   from
+
+					(
+					 select 
+							column_name_New_flg								= case when column_name_dt_created > '21MAY2019' then 1 else 0 end
+						  , column_name_app_val_o_f							= case when column_name_coVot in ('AP','APPR') then 1 else 0 end
+						  , column_name_Rat 
+																			    = case 
+																						when column_name_leg_rat = 'Immaterial' then 4
+																						when column_name_leg_rat = 'High'       then 3
+																						when column_name_leg_rat = 'Medium'     then 2
+																						when column_name_leg_rat = 'low'        then 1
+																						else                                      null end 
+						  , *
+
+					   from
+
+						(
+						select 	
+								column_name_d_date_created					= CONVERT(date, GETDATE())
+				      
+							  , column_name_dt_created							= DATEADD(s, created_dttm/1000, '19700101 00:00:00:000') 
+							  , column_name_dt_created								= cast(case when created_dttm/1000 = '253402214400'	then '99991231 23:59:59:000' else DATEADD(s, created_dttm/1000, '19700101 00:00:00:000') end as date)
+						  
+							  , column_name_Lmf							= case when CONVERT(bigint, column_name_id) < 100000 and not column_name_s_cd = 'ALG' and not column_name_sts = 'TA' then 1 else 0 end
+							  , column_name_coVot								= case when column_name_oBoar in ('N','P') and (CONVERT(bigint, column_name_id) < 100000 and not column_name_s_cd = 'ALG' and not column_name_sts = 'TA') then UPPER(column_name_lgvo) else column_name_vo end
+
+							  , column_name_immMr_f						= case when column_name_moRis = '4'  then 1 else 0 end
+
+							  , column_name_a_imm						= case when column_name_moRis = '4'	then 1 else 0 end
+							  , column_name_g_imm					       = case when column_name_lO	 = '4'	then 1 else 0 end
+							  , column_name_a_Immat					   = case when column_name_lO1	 = '4'	then 1 else 0 end
+							  , column_name_c_imm						= case when column_name_lO2	 = '4'	then 1 else 0 end
+							  , column_name_u_c_imm				= case when column_name_lO3	 = '4'	then 1 else 0 end
+							  , column_name_u_e_imm					= case when column_name_lO4	 = '4'	then 1 else 0 end
+							  , column_name_b_imm						= case when column_name_lO5	 = '4'	then 1 else 0 end
+
+	
+							  , column_name_iss_fg						= case when (column_namel_fp1 				is null) or 
+																							(column_namel_fp2 				is null) or 
+																							(column_namel_fpa				is null) or 
+																							(column_namel_ifsed			is null) or 
+																							(column_name_ccl				is null)
+																							then 1 else 0 end
+						
+							 , column_name_iss_f						= case when (column_name_mName 			is null or column_name_mName = '') or 																				    
+																							(column_name_mType			is null or column_name_mType = '') or 
+																							(column_name_mdpu 			is null or column_name_mdpu = '') or 
+
+																							(column_name_modSts		is null or column_name_modSts = '') or 
+																							(column_name_oBoar			is null or column_name_oBoar = '') or
+
+																						  --(column_name_mOwn					is null or column_name_mOwn = '') or 
+																						  --(column_name_mSpon				is null or column_name_mSpon = '') or 	
+																						  --(column_name_mVa					is null or column_name_mVa = '') or 
+																						  --(column_name_vt					is null or column_name_vt = '') or 						
+
+																						  --(column_name_n_a_organi		is null or column_name_n_a_organi = '') or
+																							(column_name_apv_co			is null or column_name_apv_co = '') then 1 else 0 end
+
+							 , cf_co01_ALL_matRat = case when charindex('3',concat(column_name_mat_L_1, column_name_mat_L_2, column_name_mat_L_3, column_name_mat_L_4, column_name_mat_L_5, column_name_mat_L_6)) > 0 then 3
+														 when charindex('2',concat(column_name_mat_L_1, column_name_mat_L_2, column_name_mat_L_3, column_name_mat_L_4, column_name_mat_L_5, column_name_mat_L_6)) > 0 then 2
+														 when charindex('1',concat(column_name_mat_L_1, column_name_mat_L_2, column_name_mat_L_3, column_name_mat_L_4, column_name_mat_L_5, column_name_mat_L_6)) > 0 then 1
+														 when charindex('4',concat(column_name_mat_L_1, column_name_mat_L_2, column_name_mat_L_3, column_name_mat_L_4, column_name_mat_L_5, column_name_mat_L_6)) > 0 then 4
+														 else NULL end
+							
+							
+																							  
+							  , *
+						 from dmt.table_name_mod_data 
+						 left join dmt.table_name_ent_1 tE				on tE.column_name_obj_1 = column_name_obj_1_r
+
+						) as t0
+
+					) as t1 
+
+				) as t2
+
+			) as t3
+			) as t4
+			) as t5
+			) as t6
+
+
+
+
+
+GO
+
+
